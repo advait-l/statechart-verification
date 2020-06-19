@@ -24,6 +24,7 @@ statechart sc {
   }
 
   state s2 {
+    switch_status :int;
     entry : {} 
 
     exit  : {} 

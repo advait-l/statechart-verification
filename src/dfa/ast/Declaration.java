@@ -44,7 +44,7 @@ public class Declaration {
     if(this.input) {
       s += " #";
     }
-    s += " : " + this.typeName + " : " + this.type + " Scope : " + this.scope + ";"; 
+    s += " : " + this.typeName + " : " + this.type + " : " + this.scope + ";"; 
     return s;
   }
 

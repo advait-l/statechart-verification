@@ -527,7 +527,7 @@ public class Typechecker {
 
     this.typecheckName(as.lhs, wenv);
     this.typecheckExpression(as.rhs, renv);
-
+    
     if(!as.lhs.getType().equals(as.rhs.getType())) {
       throw new Exception("In assignment " + as + " lhs: " + as.lhs.getType() +
         " and rhs type " + as.rhs.getType() + " don't match.");

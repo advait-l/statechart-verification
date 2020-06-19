@@ -62,6 +62,17 @@ public class ExecutionState
         return false;
     }
 
+    public ArrayList<Declaration> getInputVariables(State s)
+    {
+        ArrayList<Declaration> output = new ArrayList<Declaration>();
+        for(Declaration d : s.declarations)
+        {
+            if(d.input)
+                output.add(d);
+        }
+        return output;
+    }
+
     // everytime a state is entered,
     // the configuration list adds that state to the far end,
     // the local variables are initialized to null in the valueEnvironment,
@@ -90,9 +101,9 @@ public class ExecutionState
     {
         this.setHistoryState(s.getSuperstate(), s);
         this.configuration.remove(s);
+        Map<Declaration, Expression> temp = new HashMap<Declaration, Expression>();
         for(Declaration d : s.declarations)
         {
-            Map<Declaration, Expression> temp = new HashMap<Declaration, Expression>();
             temp.put(d, this.valueEnvironment.get(d));
             this.valueHistory.put(s, temp);
             if(d.getScope().name.equals("local"))
@@ -133,10 +144,10 @@ public class ExecutionState
             s += st.name + " ";
         }
         s += "\n";
-        s += "State History: \n";
+        s += "State History: ";
         for(State st : this.stateHistory.keySet())
         {
-            s += st.name + " : " + this.stateHistory.get(st).name;
+            s += "\n" + st.name + " : " + this.stateHistory.get(st).name;
         }
         // not adding the value history for now as it will get way too cluttered
         return s; 
