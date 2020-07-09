@@ -3,7 +3,10 @@ package simulator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.HashMap;
+import java.util.Queue;
+import java.util.LinkedList;
 
 import ast.*;
 
@@ -11,6 +14,7 @@ public class ExecutionState
 {
     private Map<Declaration, Expression> valueEnvironment         = new HashMap<Declaration, Expression>();
     private List<State> configuration                             = new ArrayList<State>();
+    private Queue<String> eventQueue                              = new LinkedList<String>();
     private Map<State, State> stateHistory                        = new HashMap<State, State>();
     private Map<State, Map<Declaration, Expression>> valueHistory = new HashMap<State, Map<Declaration, Expression>>();
 
@@ -24,6 +28,28 @@ public class ExecutionState
           {
             populate_state(s);
           }
+        }
+
+        for(String e : st.events)
+        {
+            this.eventQueue.add(e);
+        }
+    }
+
+    public void addEvent(String e)
+    {
+        this.eventQueue.add(e);
+    }
+
+    public String getEvent() throws NoSuchElementException
+    {
+        try
+        {
+            return this.eventQueue.remove();
+        }
+        catch (NoSuchElementException e)
+        {
+            return ("null");
         }
     }
 

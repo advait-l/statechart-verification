@@ -107,14 +107,14 @@ public class Simulator {
   }
 
   // takes a state as the input and returns a valid transition (if available) with the input state as the source state
-  Transition get_valid_transition(State curr, int i, Transition output) throws Exception 
+  Transition get_valid_transition(State curr, State fix, int i, Transition output, String event) throws Exception 
   {
     try
     {
       curr = curr.getSuperstate();
       for(Transition t : curr.transitions)
       {
-        if(((BooleanConstant)EvaluateExpression.evaluate(t.guard)).value && eState.presentInConfiguration(t.getSource()))
+        if(((BooleanConstant)EvaluateExpression.evaluate(t.guard)).value && eState.presentInConfiguration(t.getSource()) && t.trigger.equals(event))
         {
           output = t;
           i++;
@@ -122,14 +122,21 @@ public class Simulator {
       }
       if(!curr.equals(this.statechart))
       {
-        return this.get_valid_transition(curr, i, output);
+        return this.get_valid_transition(curr, fix, i, output, event);
       }
       else
       {
         if(i == 0)
         {
-          System.out.println("No Viable Transition! Halting Simulation...");
-          ExecuteStatement.executeStatement(new HaltStatement());
+          if(event.equals("null")) // if no viable transition is found
+          {
+            System.out.println("No Viable Transition! Halting Simulation...");
+            ExecuteStatement.executeStatement(new HaltStatement());
+          }
+          else                    // if no viable transition is found for the current event, we re-reun the entire search with null event
+          {
+            return this.get_valid_transition(fix, fix, i, output, "null");
+          }
         }
         else if(i > 1)
         {
@@ -171,12 +178,14 @@ public class Simulator {
       while(true)
       {
         curr = this.get_atomic_state(curr);                                         // gets to the state where from where the execution begins
+        String event = eState.getEvent();
         input.nextLine(); // to break the flow into key-strokes
 
         System.out.println("+--------------------------------------------------+");
         System.out.println("After " + (counter+1) + " transition/transitions :-");
         System.out.println("From State: " + curr.getFullName());
-        Transition t = this.get_valid_transition(curr, 0, null);
+        System.out.println("Current Event: " + event);
+        Transition t = this.get_valid_transition(curr, curr, 0, null, event);
         System.out.println("Performing transition: " + t.name);
         performTransition(t);
         System.out.println("Final State Map: " + eState.generate_summary());
