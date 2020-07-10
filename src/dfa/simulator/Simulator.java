@@ -67,15 +67,14 @@ public class Simulator {
   // c) when it gets to the lowest upper bound, it executes the action associated with the transition
   // d) bubbles down to the destination state from the lowest upper bound
   // e) while bubbling down, it executes all the entry statements for the states in the path
-  private void performTransition(Transition t) throws Exception
+  private void performTransition(Transition t, State curr) throws Exception
   {
     try
     {
       State source = t.getSource();
       State destination = t.getDestination();
       State lub = this.statechart.lub(source, destination);
-      State current = source;
-
+      State current = curr;
       while(!current.equals(lub)) // bubbles up to lowest upper bound
       {
         ExecuteStatement.executeStatement(current.exit);
@@ -93,7 +92,7 @@ public class Simulator {
         current = current.getSuperstate();
       }
       int i = path.size() - 1;
-      while(i > 0)
+      while(i != 0)
       {
         eState.enterState(path.get(i));
         ExecuteStatement.executeStatement(path.get(i).entry);
@@ -187,7 +186,7 @@ public class Simulator {
         System.out.println("Current Event: " + event);
         Transition t = this.get_valid_transition(curr, curr, 0, null, event);
         System.out.println("Performing transition: " + t.name);
-        performTransition(t);
+        performTransition(t, curr);
         System.out.println("Final State Map: " + eState.generate_summary());
         curr = t.getDestination();
         System.out.println("Reached State: " + curr.getFullName());
