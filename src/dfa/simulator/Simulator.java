@@ -30,13 +30,20 @@ public class Simulator {
 
   // takes a state and returns the atomic state for it (in the process, it also executes all the entry statements for the states lying in the path)
   // also takes care of whether the state has a history tag or not
-  private State get_atomic_state(State state) throws Exception
+  private State get_atomic_state(State state, int tag) throws Exception
   {
     State init = state;
     try 
     {
-      eState.enterState(init);                       // enters the state
-      ExecuteStatement.executeStatement(init.entry); // execute the entry statement
+      if(tag == 1)
+      {
+        eState.enterState(init);                       // enters the state
+        ExecuteStatement.executeStatement(init.entry); // execute the entry statement
+      }
+      else
+      {
+        tag = 1;
+      }
       if(init.states.isEmpty())                      // if the state is atomic
       {
         return init;
@@ -45,11 +52,11 @@ public class Simulator {
       {
         if((init.maintainsHisotry()).value)          // if the state maintains history
         {
-          return this.get_atomic_state(eState.getHistoryState(init));
+          return this.get_atomic_state(eState.getHistoryState(init), tag);
         }
         else                                         // if the state does not maintain history
         {
-          return this.get_atomic_state(init.states.get(0));
+          return this.get_atomic_state(init.states.get(0), tag);
         }
       }
     }
@@ -97,6 +104,11 @@ public class Simulator {
         eState.enterState(path.get(i));
         ExecuteStatement.executeStatement(path.get(i).entry);
         i --;
+      }
+      if(i == 0)
+      {
+        eState.enterState(t.getDestination());
+        ExecuteStatement.executeStatement(t.getDestination().entry);
       }
     }
     catch (Exception e)
@@ -172,11 +184,10 @@ public class Simulator {
       int counter = 0;                                                              // to label the number of transitions performed
 
       State curr = (State)statechart;                                               // curr represents the current state
-
+      curr = this.get_atomic_state(curr, 1);  
       //Main-loop
       while(true)
       {
-        curr = this.get_atomic_state(curr);                                         // gets to the state where from where the execution begins
         String event = eState.getEvent();
         input.nextLine(); // to break the flow into key-strokes
 
@@ -192,6 +203,7 @@ public class Simulator {
         System.out.println("Reached State: " + curr.getFullName());
         System.out.println("+--------------------------------------------------+");
         counter ++;
+        curr = this.get_atomic_state(curr, 0);                                      // gets to the state where from where the execution begins
       }
     }
     catch (Exception e)
