@@ -2,8 +2,6 @@ package simulator;
 
 import java.util.ArrayList;
 
-import java.util.Scanner;
-
 import ast.*;
 //
 
@@ -12,25 +10,27 @@ public class Simulator {
   // necessary for simulator
   private Statechart statechart = null;
   public static ExecutionState eState;
+  public SimulationMode simulationMode;
 
   public Simulator(Statechart statechart) throws Exception
   {
     try 
     {
       this.statechart = statechart;
-      this.simulation();
+      eState = new ExecutionState(statechart); 
+      this.simulationMode = new UserEventInSteps(this.statechart);
+      this.simulationMode.simulate(eState);
     }
     catch (Exception e)
     {
       System.out.println("Simulation Failed! Returning from Simulator\n");
     }
   }
-
   
 
   // takes a state and returns the atomic state for it (in the process, it also executes all the entry statements for the states lying in the path)
   // also takes care of whether the state has a history tag or not
-  private State get_atomic_state(State state, int tag) throws Exception
+  public static State get_atomic_state(State state, int tag) throws Exception
   {
     State init = state;
     try 
@@ -52,11 +52,11 @@ public class Simulator {
       {
         if((init.maintainsHisotry()).value)          // if the state maintains history
         {
-          return this.get_atomic_state(eState.getHistoryState(init), tag);
+          return get_atomic_state(eState.getHistoryState(init), tag);
         }
         else                                         // if the state does not maintain history
         {
-          return this.get_atomic_state(init.states.get(0), tag);
+          return get_atomic_state(init.states.get(0), tag);
         }
       }
     }
@@ -74,13 +74,13 @@ public class Simulator {
   // c) when it gets to the lowest upper bound, it executes the action associated with the transition
   // d) bubbles down to the destination state from the lowest upper bound
   // e) while bubbling down, it executes all the entry statements for the states in the path
-  private void performTransition(Transition t, State curr) throws Exception
+  public static void performTransition(Transition t, State curr, Statechart statechart) throws Exception
   {
     try
     {
       State source = t.getSource();
       State destination = t.getDestination();
-      State lub = this.statechart.lub(source, destination);
+      State lub = statechart.lub(source, destination);
       State current = curr;
       while(!current.equals(lub)) // bubbles up to lowest upper bound
       {
@@ -118,7 +118,7 @@ public class Simulator {
   }
 
   // takes a state as the input and returns a valid transition (if available) with the input state as the source state
-  Transition get_valid_transition(State curr, State fix, int i, Transition output, String event) throws Exception 
+  public static Transition get_valid_transition(State curr, State fix, int i, Transition output, String event, Statechart statechart) throws Exception 
   {
     try
     {
@@ -131,9 +131,9 @@ public class Simulator {
           i++;
         }
       }
-      if(!curr.equals(this.statechart))
+      if(!curr.equals(statechart))
       {
-        return this.get_valid_transition(curr, fix, i, output, event);
+        return get_valid_transition(curr, fix, i, output, event, statechart);
       }
       else
       {
@@ -146,7 +146,7 @@ public class Simulator {
           }
           else                    // if no viable transition is found for the current event, we re-reun the entire search with null event
           {
-            return this.get_valid_transition(fix, fix, i, output, "null");
+            return get_valid_transition(fix, fix, i, output, "null", statechart);
           }
         }
         else if(i > 1)
@@ -167,50 +167,7 @@ public class Simulator {
     }
     return output;
   }
-
-  // this is the main function corresponding to the simulation
-  public void simulation() throws Exception 
-  {
-    try 
-    {
-      System.out.println("\n\n\n Beginning Simulation... \n\n\n");
-
-      // populating the valueEnvironment
-      eState = new ExecutionState(statechart);
-
-      System.out.println("Initial Statechart Map: " + eState.generate_summary());
-      
-      Scanner input = new Scanner(System.in);                                       // to check the sequential simulation
-      int counter = 0;                                                              // to label the number of transitions performed
-
-      State curr = (State)statechart;                                               // curr represents the current state
-      curr = this.get_atomic_state(curr, 1);  
-      //Main-loop
-      while(true)
-      {
-        String event = eState.getEvent();
-        input.nextLine(); // to break the flow into key-strokes
-
-        System.out.println("+--------------------------------------------------+");
-        System.out.println("After " + (counter+1) + " transition/transitions :-");
-        System.out.println("From State: " + curr.getFullName());
-        System.out.println("Current Event: " + event);
-        Transition t = this.get_valid_transition(curr, curr, 0, null, event);
-        System.out.println("Performing transition: " + t.name);
-        performTransition(t, curr);
-        System.out.println("Final State Map: " + eState.generate_summary());
-        curr = t.getDestination();
-        System.out.println("Reached State: " + curr.getFullName());
-        System.out.println("+--------------------------------------------------+");
-        counter ++;
-        curr = this.get_atomic_state(curr, 0);                                      // gets to the state where from where the execution begins
-      }
-    }
-    catch (Exception e)
-    {
-      System.out.println("Simulation Failed!\n"); 
-    }
-  }
 }
+
 //https://github.com/AmoghJohri/StatechartSimulator.git
 

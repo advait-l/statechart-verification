@@ -53,6 +53,14 @@ public class ExecutionState
         }
     }
 
+    public void emptyEventQueue()
+    {
+        for(String s : this.eventQueue)
+        {
+            this.eventQueue.remove();
+        }
+    }
+
     public void setValue(Declaration d, Expression e)
     {
         this.valueEnvironment.put(d, e);
