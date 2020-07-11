@@ -67,7 +67,7 @@ public class TestFrontEnd {
       e.printStackTrace();
     }
     try{
-      new Simulator(statechart).simulation();
+      new Simulator(statechart);
     }
     catch(Exception e){
       System.out.println("Error in Simulation");
