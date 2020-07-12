@@ -7,7 +7,9 @@ public class EvaluateExpression{
     public static Expression evaluate(Expression e){
         try {
           if(e instanceof BinaryExpression)
-            return evaluateBinaryExpression((BinaryExpression)e);
+          {
+           return evaluateBinaryExpression((BinaryExpression)e);
+          }
           else if(e instanceof Name)
             return Simulator.eState.getValue(((Name)e).getDeclaration());
           else if(e instanceof BooleanConstant || e instanceof IntegerConstant || e instanceof StringLiteral)
