@@ -32,6 +32,18 @@ statechart CourseEnrollment {
       
     entry : {
 		isSelected:=false;
+        creditsSelected := 0;
+	  //user.userType:=2;
+      /*if (switch_var < 2)
+      {
+        inp1 := 0; 
+        inp2 := 0; 
+        inp3 := 0;
+        switch_var := 2;
+      }
+      else {
+		switch_var := 1;
+	  }*/
     } 
 
     exit  : {
